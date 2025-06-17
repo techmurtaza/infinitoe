@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic-Tac-Toe XL - No Draws, Pure Vibes ✨</title>
+    <meta name="description" content="The most addictive Tic-Tac-Toe game with no draws - keeps going until someone wins!" />
+    <style>
+      /* Prevent flash of unstyled content */
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .loading {
+        color: white;
+        font-family: system-ui, sans-serif;
+        text-align: center;
+      }
+      
+      .loading::after {
+        content: '...';
+        animation: dots 1s infinite;
+      }
+      
+      @keyframes dots {
+        0%, 33% { content: ''; }
+        66% { content: '.'; }
+        100% { content: '..'; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="loading">Loading the ultimate Tic-Tac-Toe experience</div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 
