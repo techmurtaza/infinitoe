@@ -1,154 +1,253 @@
-/*
- * Gen-Z Addictive Tic-Tac-Toe UI
- * Smooth animations, dopamine-hitting effects, modern design
+/**
+ * @fileoverview This is the main UI component for the game. It's responsible for rendering the
+ * game board, handling user input, and displaying the game state. It's a beast of a component,
+ * but it's what makes the game look and feel so good.
  */
 
-import { useState,  useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Circle, Zap, Sparkles, RotateCcw, Settings } from 'lucide-react';
-import { TicTacToeGame, Player, EasyAI, MediumAI, HardAI, AI } from '../engine';
+import { InfinitoeGame, Player, EasyAI, MediumAI, HardAI, AI } from '../engine';
 
 type GameMode = 'pvp' | 'ai';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
-export default function TicTacToe() {
-  const [game] = useState(() => new TicTacToeGame());
+/**
+ * The main UI component for the game. It's a functional component that uses React hooks to manage
+ * its state. It's also responsible for rendering the game board, handling user input, and
+ * displaying the game state.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
+export default function Infinitoe() {
+  /**
+   * The game state. We use the `useState` hook to manage the game state, and we initialize it with
+   * a new instance of the `InfinitoeGame` class.
+   *
+   * @private
+   * @type {[InfinitoeGame, React.Dispatch<React.SetStateAction<InfinitoeGame>>]}
+   */
+  const [game] = useState(() => new InfinitoeGame());
+
+  /**
+   * The game board. We use the `useState` hook to manage the board state, and we initialize it with
+   * an array of 9 nulls.
+   *
+   * @private
+   * @type {[<(Player | null)[]>, React.Dispatch<React.SetStateAction<(Player | null)[]>>]}
+   */
   const [board, setBoard] = useState<(Player | null)[]>(Array(9).fill(null));
+
+  /**
+   * The game mode. We use the `useState` hook to manage the game mode, and we initialize it to 'pvp'.
+   *
+   * @private
+   * @type {[GameMode, React.Dispatch<React.SetStateAction<GameMode>>]}
+   */
   const [gameMode, setGameMode] = useState<GameMode>('pvp');
+
+  /**
+   * The AI difficulty. We use the `useState` hook to manage the AI difficulty, and we initialize it
+   * to 'medium'.
+   *
+   * @private
+   * @type {[Difficulty, React.Dispatch<React.SetStateAction<Difficulty>>]}
+   */
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
-  const [ai, setAi] = useState<AI>(new MediumAI());
+
+  /**
+   * The AI instance. We use the `useState` hook to manage the AI instance, and we initialize it to
+   * a new instance of the `MediumAI` class.
+   *
+   * @private
+   * @type {[AI, React.Dispatch<React.SetStateAction<AI>>]}
+   */
+  const [ai, setAi] = useState<AI>(() => new MediumAI());
+
+  /**
+   * Whether the AI is thinking. We use this to disable the board while the AI is making its move.
+   *
+   * @private
+   * @type {[boolean, React.Dispatch<React.SetStateAction<boolean>>]}
+   */
   const [isAiThinking, setIsAiThinking] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [removedCells, setRemovedCells] = useState<number[]>([]);
+
+  /**
+   * The index of the last move made. We use this to highlight the last move on the board.
+   *
+   * @private
+   * @type {[number | null, React.Dispatch<React.SetStateAction<number | null>>]}
+   */
   const [lastMove, setLastMove] = useState<number | null>(null);
-  const [moveCount, setMoveCount] = useState(0);
+
+  /**
+   * An array of cells that have been removed from the board. We use this to highlight the removed
+   * cells on the board.
+   *
+   * @private
+   * @type {[number[], React.Dispatch<React.SetStateAction<number[]>>]}
+   */
+  const [removedCells, setRemovedCells] = useState<number[]>([]);
+
+  /**
+   * The current win streak. We use this to display the win streak to the user.
+   *
+   * @private
+   * @type {[number, React.Dispatch<React.SetStateAction<number>>]}
+   */
   const [streak, setStreak] = useState(0);
 
-  // Update board state
+  /**
+   * Whether the settings are shown.
+   *
+   * @private
+   * @type {[boolean, React.Dispatch<React.SetStateAction<boolean>>]}
+   */
+  const [showSettings, setShowSettings] = useState(false);
+
+  /**
+   * The number of moves made in the game.
+   *
+   * @private
+   * @type {[number, React.Dispatch<React.SetStateAction<number>>]}
+   */
+  const [moveCount, setMoveCount] = useState(0);
+
   const updateBoard = useCallback(() => {
-    setBoard(game.getBoardArray());
-    setMoveCount(game.getMoveCount());
+    setBoard(game.getBoard().toArray());
+    setMoveCount(9 - game.getBoard().getLegalMoves().length);
   }, [game]);
 
-  // Handle cell click
+  useEffect(() => {
+    updateBoard();
+  }, [updateBoard]);
+
+  /**
+   * Handles a click on a cell. If it's the AI's turn, this function does nothing. Otherwise, it
+   * makes a move for the current player and updates the board.
+   *
+   * @param {number} index The index of the cell that was clicked.
+   */
   const handleCellClick = (index: number) => {
-    if (board[index] || game.isGameOver()) return;
-    if (gameMode === 'ai' && game.getCurrentPlayer() === 'O' && isAiThinking) return;
+    if (game.isGameOver() || (gameMode === 'ai' && game.getCurrentPlayer() === 'O') || board[index]) return;
 
-    const prevBoard = [...board];
-    const success = game.makeMove(index);
-    
-    if (success) {
-      setLastMove(index);
-      updateBoard();
-      
-      // Check for silent removals (now potentially 2 cells)
-      const newBoard = game.getBoardArray();
-      const removed: number[] = [];
-      for (let i = 0; i < 9; i++) {
-        if (prevBoard[i] && !newBoard[i]) {
-          removed.push(i);
-        }
-      }
-      
-      if (removed.length > 0) {
-        setRemovedCells(removed);
-        setTimeout(() => setRemovedCells([]), 1500); // Longer timeout for 2 removals
-      }
+    const { removed } = game.makeMove(index);
+    setLastMove(index);
 
-      // Handle AI move if in AI mode
-      if (gameMode === 'ai' && !game.isGameOver() && game.getCurrentPlayer() === 'O') {
-        setIsAiThinking(true);
-        
-        // Add delay for better UX
-        setTimeout(() => {
-          const aiMove = ai.chooseMove(game);
-          const aiSuccess = game.makeMove(aiMove);
-          if (aiSuccess) {
-            setLastMove(aiMove);
-            updateBoard();
-          }
-          setIsAiThinking(false);
-        }, 500 + Math.random() * 1000); // 0.5-1.5s delay
-      }
-
-      // Update win streak
-      if (game.isGameOver()) {
-        const winner = game.getWinner();
-        if (gameMode === 'pvp' || (gameMode === 'ai' && winner === 'X')) {
-          setStreak(prev => prev + 1);
-        } else {
-          setStreak(0);
-        }
-      }
+    if (removed !== null) {
+      setRemovedCells(prev => [...prev.filter(c => c !== removed), removed]);
+      setTimeout(() => setRemovedCells(prev => prev.filter(c => c !== removed)), 500);
     }
+
+    if (game.isGameOver()) {
+      setStreak(prev => (game.getGameStatus() === 'X_WIN' ? prev + 1 : 0));
+    }
+    
+    updateBoard();
   };
 
-  // Reset game
+  /**
+   * The AI's turn. This function is called when it's the AI's turn to make a move. It uses a
+   * `setTimeout` to simulate a thinking delay, then it chooses a move and updates the board.
+   */
+  useEffect(() => {
+    if (gameMode === 'ai' && !game.isGameOver() && game.getCurrentPlayer() === 'O') {
+      setIsAiThinking(true);
+      const timer = setTimeout(() => {
+        const move = ai.chooseMove(game);
+        const { removed } = game.makeMove(move);
+        setLastMove(move);
+        if (removed !== null) {
+          setRemovedCells(prev => [...prev, removed]);
+          setTimeout(() => setRemovedCells(prev => prev.filter(c => c !== removed)), 500);
+        }
+        if (game.isGameOver()) {
+          setStreak(0); // Player's streak is broken by AI win
+        }
+        setIsAiThinking(false);
+        updateBoard();
+      }, 500 + Math.random() * 500); // Realistic delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [board, game, gameMode, ai, updateBoard]);
+
+  /**
+   * Resets the game to its initial state.
+   */
   const resetGame = () => {
     game.reset();
     updateBoard();
     setLastMove(null);
     setRemovedCells([]);
-    setIsAiThinking(false);
   };
 
-  // Change AI difficulty
+  /**
+   * Changes the AI difficulty.
+   *
+   * @param {Difficulty} newDifficulty The new difficulty.
+   */
   const changeDifficulty = (newDifficulty: Difficulty) => {
     setDifficulty(newDifficulty);
-    const aiMap = {
-      easy: new EasyAI(),
-      medium: new MediumAI(),
-      hard: new HardAI()
-    };
-    setAi(aiMap[newDifficulty]);
+    switch (newDifficulty) {
+      case 'easy':
+        setAi(new EasyAI());
+        break;
+      case 'medium':
+        setAi(new MediumAI());
+        break;
+      case 'hard':
+        setAi(new HardAI());
+        break;
+    }
+    resetGame();
   };
 
-  // Get status message
+  /**
+   * Gets the status message to display to the user.
+   *
+   * @returns {string} The status message.
+   */
   const getStatusMessage = () => {
-    const winner = game.getWinner();
-    const currentPlayer = game.getCurrentPlayer();
-    
-    if (winner) {
-      if (gameMode === 'ai') {
-        return winner === 'X' ? '🎉 You Win!' : '🤖 AI Wins!';
-      }
-      return `🏆 Player ${winner} Wins!`;
+    const status = game.getGameStatus();
+    if (status === 'X_WIN') return 'Player X Wins! 🏆';
+    if (status === 'O_WIN') return gameMode === 'ai' ? 'AI Wins! 🤖' : 'Player O Wins! 🏆';
+
+    if (isAiThinking) {
+      return '🤖 AI is thinking...';
     }
-    
-    if (isAiThinking) return '🤖 AI is thinking...';
-    
-    if (gameMode === 'ai') {
-      return currentPlayer === 'X' ? 'Your turn' : "AI's turn";
-    }
-    
-    return `Player ${currentPlayer}'s turn`;
+
+    return `Player ${game.getCurrentPlayer()}'s Turn`;
   };
 
+  /**
+   * The animation variants for the game board.
+   */
+  const boardVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        when: "beforeChildren",
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  /**
+   * The animation variants for the cells.
+   */
   const cellVariants = {
-    hidden: { scale: 0, rotate: -180 },
-    visible: { 
-      scale: 1, 
-      rotate: 0,
-      transition: { type: "spring", stiffness: 300, damping: 20 }
+    hidden: { scale: 0, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 },
     },
     removed: {
       scale: 0,
       opacity: 0,
-      rotate: 180,
-      transition: { duration: 0.3 }
-    }
-  };
-
-  const boardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { 
-        delay: 0.2,
-        staggerChildren: 0.1
-      }
+      transition: { duration: 0.2 }
     }
   };
 
@@ -188,7 +287,7 @@ export default function TicTacToe() {
           }}
           transition={{ duration: 3, repeat: Infinity }}
         >
-          Tic-Tac-Toe XL
+          Infinitoe
         </motion.h1>
         <p className="text-gray-300 text-lg">No draws, pure vibes ✨</p>
         
@@ -387,7 +486,7 @@ export default function TicTacToe() {
               }}
               transition={{ duration: 1, type: "spring", stiffness: 200 }}
             >
-              {game.getWinner() === 'X' ? '🔥' : '🤖'}
+              {game.getGameStatus() === 'X_WIN' ? '🔥' : '🤖'}
             </motion.div>
           </motion.div>
         )}

@@ -2,10 +2,92 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tic-Tac-Toe XL - No Draws, Pure Vibes ✨</title>
-    <meta name="description" content="The most addictive Tic-Tac-Toe game with no draws - keeps going until someone wins!" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Infinitoe - The Tic-Tac-Toe That Never Ends | Murtaza Lightwala</title>
+    <meta name="title" content="Infinitoe - The Tic-Tac-Toe That Never Ends | Murtaza Lightwala" />
+    <meta name="description" content="🔥 The tic-tac-toe that never ends. No draws, just pure dopamine hits. 3-move rolling window = infinite gameplay. Built by Murtaza Lightwala with React + TypeScript + Framer Motion. FR this will get you addicted. 💯" />
+    <meta name="keywords" content="infinitoe, tic-tac-toe, never ending game, no draws, Murtaza Lightwala, techmurtaza, react game, typescript game, infinite gameplay, addictive game, gen-z game, viral game, browser game, web game, framer motion, rolling window, dopamine game" />
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="author" content="Murtaza Lightwala" />
+    <meta name="creator" content="Murtaza Lightwala" />
+    <meta name="publisher" content="Murtaza Lightwala" />
+    <link rel="canonical" href="https://techmurtaza.github.io/infinitoe/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://techmurtaza.github.io/infinitoe/" />
+    <meta property="og:title" content="Infinitoe - The Tic-Tac-Toe That Never Ends" />
+    <meta property="og:description" content="🔥 The tic-tac-toe that never ends. No draws, just pure dopamine hits. 3-move rolling window = infinite gameplay. Built by Murtaza Lightwala." />
+    <meta property="og:image" content="https://techmurtaza.github.io/infinitoe/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Infinitoe" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://techmurtaza.github.io/infinitoe/" />
+    <meta property="twitter:title" content="Infinitoe - The Tic-Tac-Toe That Never Ends" />
+    <meta property="twitter:description" content="🔥 The tic-tac-toe that never ends. No draws, just pure dopamine hits. Built by @techmurtaza" />
+    <meta property="twitter:image" content="https://techmurtaza.github.io/infinitoe/twitter-card.png" />
+    <meta property="twitter:creator" content="@techmurtaza" />
+    <meta property="twitter:site" content="@techmurtaza" />
+    
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#667eea" />
+    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta name="application-name" content="Infinitoe" />
+    <meta name="apple-mobile-web-app-title" content="Infinitoe" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Author and Website Links -->
+    <link rel="author" href="https://techmurtaza.com" />
+    <link rel="me" href="https://techmurtaza.com" />
+    <meta name="contact" content="https://techmurtaza.com" />
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Infinitoe",
+      "description": "The tic-tac-toe that never ends. No draws, just pure dopamine hits. 3-move rolling window = infinite gameplay.",
+      "url": "https://techmurtaza.github.io/infinitoe/",
+      "applicationCategory": "Game",
+      "operatingSystem": "Web Browser",
+      "author": {
+        "@type": "Person",
+        "name": "Murtaza Lightwala",
+        "url": "https://techmurtaza.com",
+        "sameAs": [
+          "https://github.com/techmurtaza",
+          "https://techmurtaza.com"
+        ]
+      },
+      "creator": {
+        "@type": "Person", 
+        "name": "Murtaza Lightwala",
+        "url": "https://techmurtaza.com"
+      },
+      "genre": ["Strategy Game", "Browser Game", "Puzzle Game"],
+      "keywords": "tic-tac-toe, infinite game, no draws, react game, typescript",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "ratingCount": "1"
+      }
+    }
+    </script>
+    
     <style>
       /* Prevent flash of unstyled content */
       body {
@@ -15,12 +97,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        font-family: 'Inter', system-ui, sans-serif;
       }
       
       .loading {
         color: white;
-        font-family: system-ui, sans-serif;
+        font-family: 'Inter', system-ui, sans-serif;
         text-align: center;
+        font-weight: 600;
       }
       
       .loading::after {
@@ -33,12 +117,32 @@
         66% { content: '.'; }
         100% { content: '..'; }
       }
+      
+      .creator-link {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.3s ease;
+      }
+      
+      .creator-link:hover {
+        color: white;
+      }
     </style>
   </head>
   <body>
     <div id="root">
-      <div class="loading">Loading the ultimate Tic-Tac-Toe experience</div>
+      <div class="loading">Loading Infinitoe by Murtaza Lightwala</div>
     </div>
+    
+    <!-- Creator Attribution -->
+    <a href="https://techmurtaza.com" target="_blank" rel="noopener noreferrer" class="creator-link">
+      Created by Murtaza Lightwala
+    </a>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html> 

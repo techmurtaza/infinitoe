@@ -1,8 +1,17 @@
 {
-  "name": "tic-tac-toe-xl",
-  "private": true,
+  "name": "infinitoe",
+  "private": false,
   "version": "1.0.0",
   "type": "module",
+  "description": "🔥 Infinitoe - The tic-tac-toe that never ends. No draws, just pure dopamine hits. 3-move rolling window = infinite gameplay.",
+  "keywords": ["react", "typescript", "game", "infinitoe", "infinite", "endless", "addictive", "framer-motion", "gen-z", "viral-game"],
+  "author": "Murtaza Lightwala",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/techmurtaza/infinitoe"
+  },
+  "homepage": "https://github.com/techmurtaza/infinitoe",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -1,28 +1,40 @@
-/*
- * AI Strategies for different difficulty levels
- * Easy: Random moves
- * Medium: Heuristic-based strategic play
- * Hard: Minimax with alpha-beta pruning
+/**
+ * @fileoverview This file contains the AI for the game. We have three levels of difficulty: Easy,
+ * Medium, and Hard. Easy is a random-move generator, Medium is a heuristic-based AI, and Hard is a
+ * minimax-powered beast. Choose your poison.
  */
 
-import { TicTacToeGame } from './Game';
+import { InfinitoeGame } from './Game';
 import { Board, Player } from './Board';
 
 export interface AI {
-  chooseMove(game: TicTacToeGame): number;
+  /**
+   * Chooses a move for the AI to make.
+   *
+   * @param {InfinitoeGame} game The current game state.
+   * @returns {number} The index of the cell to move to.
+   */
+  chooseMove(game: InfinitoeGame): number;
 }
 
-// Easy AI: Random valid moves - perfect for beginners
+/**
+ * The Easy AI. It's not very smart, but it's trying its best. It chooses a random legal move,
+ * which is about as effective as you'd expect.
+ */
 export class EasyAI implements AI {
-  chooseMove(game: TicTacToeGame): number {
+  chooseMove(game: InfinitoeGame): number {
     const moves = game.getBoard().getLegalMoves();
     return moves[Math.floor(Math.random() * moves.length)];
   }
 }
 
-// Medium AI: Strategic heuristic-based play
+/**
+ * The Medium AI. It's a bit smarter than the Easy AI, but it's still no genius. It uses a
+ * heuristic-based approach to choose its moves, which is a fancy way of saying it follows a
+ * set of rules. It's not perfect, but it'll put up a fight.
+ */
 export class MediumAI implements AI {
-  chooseMove(game: TicTacToeGame): number {
+  chooseMove(game: InfinitoeGame): number {
     const board = game.getBoard();
     const me = game.getCurrentPlayer();
     const opponent: Player = me === 'X' ? 'O' : 'X';
@@ -76,6 +88,15 @@ export class MediumAI implements AI {
     return board.getLegalMoves()[0];
   }
 
+  /**
+   * Finds a fork move for the given player. A fork is a move that creates two ways to win on the
+   * next turn. It's a classic tic-tac-toe strategy, and it's just as effective here.
+   *
+   * @private
+   * @param {Board} board The current board state.
+   * @param {Player} player The player to find a fork for.
+   * @returns {number | null} The index of the fork move, or null if none is found.
+   */
   private findForkMove(board: Board, player: Player): number | null {
     const legalMoves = board.getLegalMoves();
     
@@ -103,11 +124,14 @@ export class MediumAI implements AI {
   }
 }
 
-// Hard AI: Minimax with alpha-beta pruning
+/**
+ * The Hard AI. This is where things get serious. It uses a minimax algorithm with alpha-beta
+ * pruning to find the optimal move. It's not unbeatable, but it's close. Good luck.
+ */
 export class HardAI implements AI {
   private maxDepth = 8; // Reasonable depth for performance
 
-  chooseMove(game: TicTacToeGame): number {
+  chooseMove(game: InfinitoeGame): number {
     const result = this.minimax(
       game.getBoard().clone(),
       game.getCurrentPlayer(),
@@ -119,6 +143,19 @@ export class HardAI implements AI {
     return result.move!;
   }
 
+  /**
+   * The minimax algorithm. It's a recursive function that explores the game tree, looking for the
+   * best possible move. It's a bit of a beast, but it's what makes the Hard AI so hard.
+   *
+   * @private
+   * @param {Board} board The current board state.
+   * @param {Player} currentPlayer The player whose turn it is.
+   * @param {Player} aiPlayer The AI player.
+   * @param {number} depth The current depth of the search.
+   * @param {number} alpha The alpha value for alpha-beta pruning.
+   * @param {number} beta The beta value for alpha-beta pruning.
+   * @returns {{ move: number | null; score: number }} The best move and its score.
+   */
   private minimax(
     board: Board,
     currentPlayer: Player,

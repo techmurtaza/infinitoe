@@ -1,109 +1,134 @@
-/*
- * Main game engine with rolling 6-move window
- * Maximum 6 moves per player - oldest gets removed automatically
+/**
+ * @fileoverview This is the main game engine for Infinitoe. It's responsible for managing the game state,
+ * handling player moves, and enforcing the rules of the game. It's the brains of the operation, the
+ * puppet master pulling the strings. If you're looking for the core logic, you've come to the right
+ * place.
  */
 
 import { Board, Player } from './Board';
 
 export type GameStatus = 'ONGOING' | 'X_WIN' | 'O_WIN';
 
-export class TicTacToeGame {
-  private board = new Board();
-  private current: Player = 'X';
-  private history: Record<Player, number[]> = { X: [], O: [] };
-  private status: GameStatus = 'ONGOING';
-  private moveCount = 0;
-  private onStateChange?: () => void;
+export class InfinitoeGame {
+  /**
+   * The maximum number of moves a player can have on the board at any given time. This is the secret
+   * sauce that makes Infinitoe, well, Infinitoe.
+   *
+   * @private
+   * @static
+   * @type {number}
+   */
   private static readonly MAX_MOVES_PER_PLAYER = 3;
 
-  constructor(onStateChange?: () => void) {
-    this.onStateChange = onStateChange;
+  /**
+   * The game board. It's a bitboard, so it's fast. Like, really fast.
+   *
+   * @private
+   * @type {Board}
+   */
+  private board = new Board();
+
+  /**
+   * The current player. 'X' goes first, as is tradition.
+   *
+   * @private
+   * @type {Player}
+   */
+  private current: Player = 'X';
+
+  /**
+   * A history of each player's moves, in the order they were made. This is used to enforce the
+   * rolling window mechanic.
+   *
+   * @private
+   * @type {Record<Player, number[]>}
+   */
+  private history: Record<Player, number[]> = { X: [], O: [] };
+
+  /**
+   * The current status of the game. 'ONGOING' until someone wins.
+   *
+   * @private
+   * @type {GameStatus}
+   */
+  private status: GameStatus = 'ONGOING';
+
+  constructor() {
   }
 
+  /**
+   * Gets the current player.
+   *
+   * @returns {Player} The current player.
+   */
   getCurrentPlayer(): Player {
     return this.current;
   }
 
-  getStatus(): GameStatus {
-    return this.status;
-  }
-
+  /**
+   * Gets the game board.
+   *
+   * @returns {Board} The game board.
+   */
   getBoard(): Board {
     return this.board;
   }
 
-  getMoveCount(): number {
-    return this.moveCount;
-  }
+  /**
+   * Makes a move on the board for the current player. This is where the magic happens.
+   *
+   * @param {number} index The index of the cell to move to.
+   * @returns {{ status: GameStatus; removed: number | null }} The new game status and the index of
+   * the cell that was removed, if any.
+   */
+  makeMove(index: number): { status: GameStatus; removed: number | null } {
+    if (this.status !== 'ONGOING' || this.board.isCellOccupied(index)) {
+      return { status: this.status, removed: null };
+    }
 
-  getHistory(): Record<Player, number[]> {
-    return this.history;
-  }
+    this.board.makeMove(index, this.current);
+    this.history[this.current].push(index);
 
-  makeMove(pos: number): boolean {
-    if (this.status !== 'ONGOING') return false;
-    if (this.board.isCellOccupied(pos)) return false;
+    let removed: number | null = null;
+    if (this.history[this.current].length > InfinitoeGame.MAX_MOVES_PER_PLAYER) {
+      removed = this.history[this.current].shift()!;
+      this.board.removeMove(removed, this.current);
+    }
 
-    // Make the move
-    this.board.makeMove(pos, this.current);
-    this.history[this.current].push(pos);
-    this.moveCount++;
-
-    // Check for immediate win
     if (this.board.hasWin(this.current)) {
-      this.status = `${this.current}_WIN` as GameStatus;
-      this.notifyStateChange();
-      return true;
+      this.status = `${this.current}_WIN`;
+    } else {
+      this.current = this.current === 'X' ? 'O' : 'X';
     }
 
-    // Rolling window: if player has > 3 moves, remove the oldest
-    if (this.history[this.current].length > TicTacToeGame.MAX_MOVES_PER_PLAYER) {
-      const oldestMove = this.history[this.current].shift()!; // Remove first element
-      this.board.removeMove(oldestMove, this.current);
-      this.moveCount--;
-    }
-
-    // Switch turns
-    this.current = this.current === 'X' ? 'O' : 'X';
-    this.notifyStateChange();
-    return true;
+    return { status: this.status, removed };
   }
 
+  /**
+   * Resets the game to its initial state. Because sometimes you just need a fresh start.
+   */
   reset(): void {
     this.board.reset();
     this.current = 'X';
     this.history = { X: [], O: [] };
     this.status = 'ONGOING';
-    this.moveCount = 0;
-    this.notifyStateChange();
-  }
-
-  private notifyStateChange(): void {
-    if (this.onStateChange) {
-      this.onStateChange();
-    }
   }
 
   /**
-   * Get board state as array for React rendering
-   */
-  getBoardArray(): (Player | null)[] {
-    return this.board.toArray();
-  }
-
-  /**
-   * Check if game is over
+   * Checks if the game is over.
+   *
+   * @returns {boolean} True if the game is over, false otherwise.
    */
   isGameOver(): boolean {
     return this.status !== 'ONGOING';
   }
 
   /**
-   * Get winner if game is over
+   * Gets the current status of the game.
+   *
+   * @returns {GameStatus} The current status of the game.
    */
-  getWinner(): Player | null {
-    if (this.status === 'X_WIN') return 'X';
-    if (this.status === 'O_WIN') return 'O';
-    return null;
+  getGameStatus(): GameStatus {
+    return this.status;
   }
 } 
