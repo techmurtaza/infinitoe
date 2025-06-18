@@ -1,8 +1,8 @@
 /**
  * @fileoverview CINEMATIC INFINITOE - The ultimate tic-tac-toe experience.
- * This is the main UI component for the game with dark cyberpunk theme,
- * particle effects, immersive sound design, and responsive animations.
- * Prepare for visual ecstasy! 🔥
+ * This is the main UI component for the game, orchestrating the core game logic,
+ * sound, particle effects, and all animations to create a polished and
+ * immersive user experience.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -18,11 +18,16 @@ type GameMode = 'pvp' | 'ai';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 /**
- * THE ULTIMATE INFINITOE COMPONENT 🚀
- * Now with 100% more visual dopamine and audio satisfaction!
+ * The main game component for Infinitoe.
+ *
+ * This component manages the overall game state, including the game engine
+ * instance, board state, and UI state. It integrates the sound system,
+ * particle effects, and animations to create a cohesive and cinematic
+ * gameplay experience. It is responsible for handling all user interactions,
+ * managing the AI opponent, and displaying game status and controls.
  */
 export default function Infinitoe() {
-    // Game State
+    // Core Game State
     const [game] = useState(() => new InfinitoeGame());
     const [board, setBoard] = useState<(Player | null)[]>(Array(9).fill(null));
     const [gameMode, setGameMode] = useState<GameMode>('pvp');
@@ -35,7 +40,7 @@ export default function Infinitoe() {
     const [showSettings, setShowSettings] = useState(false);
     const [moveCount, setMoveCount] = useState(0);
 
-    // Cinematic State
+    // Cinematic & FX State
     const [showParticles, setShowParticles] = useState(false);
     const [particleType, setParticleType] = useState<'win' | 'lose' | 'celebration'>('celebration');
     const [screenShake, setScreenShake] = useState(false);
@@ -43,11 +48,11 @@ export default function Infinitoe() {
         Array<{ id: string; x: number; y: number; type: 'win' | 'lose' | 'celebration' }>
     >([]);
 
-    // Refs for animations
+    // Refs & Animation Controls
     const boardRef = useRef<HTMLDivElement>(null);
     const titleControls = useAnimation();
 
-    // Sound System
+    // Sound System Hook
     const {
         playClick,
         playPlace,
@@ -64,6 +69,10 @@ export default function Infinitoe() {
         setVolume,
     } = useSoundSystem();
 
+    /**
+     * Synchronizes the local board state with the state from the game engine.
+     * Wrapped in useCallback for performance.
+     */
     const updateBoard = useCallback(() => {
         setBoard(game.getBoard().toArray());
         setMoveCount(9 - game.getBoard().getLegalMoves().length);
@@ -74,7 +83,10 @@ export default function Infinitoe() {
     }, [updateBoard]);
 
     /**
-     * Enhanced cell click with EPIC animations and sound
+     * Handles a user's click on a board cell.
+     * This function triggers piece placement logic, animations, sound effects,
+     * and checks for game-over conditions to trigger win/loss effects.
+     * @param {number} index The index of the clicked cell (0-8).
      */
     const handleCellClick = (index: number) => {
         if (
@@ -157,7 +169,8 @@ export default function Infinitoe() {
     };
 
     /**
-     * Screen shake effect for epic moments
+     * Triggers a CSS-based screen shake animation for a short duration.
+     * Used to add impact to win events.
      */
     const triggerScreenShake = () => {
         setScreenShake(true);
@@ -165,7 +178,9 @@ export default function Infinitoe() {
     };
 
     /**
-     * AI Turn with enhanced thinking effects
+     * An effect that manages the AI's turn. It runs when the game mode is 'ai'
+     * and it's the AI's (player 'O') turn. Includes a simulated thinking delay,
+     * sound effects, and move animations.
      */
     useEffect(() => {
         if (gameMode === 'ai' && !game.isGameOver() && game.getCurrentPlayer() === 'O') {
@@ -244,7 +259,7 @@ export default function Infinitoe() {
     }, [cellBursts]);
 
     /**
-     * Reset with style
+     * Resets the game to its initial state with animations and sound.
      */
     const resetGame = () => {
         playReset();
@@ -269,7 +284,8 @@ export default function Infinitoe() {
     };
 
     /**
-     * Change difficulty with sound feedback
+     * Changes the AI difficulty level and resets the game.
+     * @param {Difficulty} newDifficulty The new difficulty to set.
      */
     const changeDifficulty = (newDifficulty: Difficulty) => {
         playClick();
@@ -289,7 +305,9 @@ export default function Infinitoe() {
     };
 
     /**
-     * Get status message with personality
+     * Computes the status message to display to the user based on the
+     * current game state (e.g., player's turn, AI thinking, win/loss).
+     * @returns {string} The formatted status message.
      */
     const getStatusMessage = () => {
         const status = game.getGameStatus();
@@ -304,7 +322,7 @@ export default function Infinitoe() {
         return `⚡ PLAYER ${game.getCurrentPlayer()}'S TURN ⚡`;
     };
 
-    // Animation variants
+    // Animation variants for Framer Motion
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {

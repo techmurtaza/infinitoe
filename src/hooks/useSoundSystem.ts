@@ -1,7 +1,9 @@
 /**
  * @fileoverview Sound system hook for managing all game audio.
  * This hook provides a centralized way to play sounds with volume control,
- * muting, and different sound categories.
+ * muting, and different sound categories. It features a robust fallback
+ * system that generates synthetic sounds via the Web Audio API if the
+ * primary audio files cannot be loaded.
  */
 
 import { useCallback, useRef, useState, useEffect } from 'react';
@@ -14,23 +16,47 @@ interface SoundConfig {
     sprite?: Record<string, [number, number]>;
 }
 
+/**
+ * Defines the public interface for the sound system.
+ * Includes methods for playing specific game events, controlling volume,
+ * and muting audio.
+ */
 interface SoundSystem {
+    /** Plays the standard UI click sound. */
     playClick: () => void;
+    /** Plays the sound for placing a piece on the board. */
     playPlace: () => void;
+    /** Plays the sound for a piece being removed from the board. */
     playRemove: () => void;
+    /** Plays the celebratory sound for a player win. */
     playWin: () => void;
+    /** Plays the sound for a player loss. */
     playLose: () => void;
+    /** Plays a subtle sound on UI element hover. */
     playHover: () => void;
+    /** Plays the sound for resetting the game. */
     playReset: () => void;
+    /** Starts the looping sound for the AI thinking state. */
     playAIThinking: () => void;
+    /** Stops the looping AI thinking sound. */
     stopAIThinking: () => void;
+    /** A boolean indicating if the sound is currently muted. */
     isMuted: boolean;
+    /** Toggles the sound system's mute state. */
     toggleMute: () => void;
+    /** The current volume level (0.0 to 1.0). */
     volume: number;
+    /** Sets the sound system's volume.
+     * @param {number} volume - The new volume level, clamped between 0.0 and 1.0.
+     */
     setVolume: (volume: number) => void;
 }
 
-// Sound URLs - in a real app, these would be actual audio files
+/**
+ * Configuration for the primary sound assets. The keys in the sprite
+ * object correspond to specific sound events.
+ * @private
+ */
 const SOUND_CONFIGS: Record<string, SoundConfig> = {
     ui: {
         src: ['/sounds/ui-sounds.webm', '/sounds/ui-sounds.mp3'],
@@ -58,7 +84,15 @@ const SOUND_CONFIGS: Record<string, SoundConfig> = {
     },
 };
 
-// Fallback: Generate synthetic sounds using Web Audio API
+/**
+ * Fallback audio generation using the Web Audio API. This creates simple
+ * tones to ensure the game has audio feedback even if asset loading fails.
+ * @param {number} frequency - The frequency of the tone in Hz.
+ * @param {number} duration - The duration of the sound in seconds.
+ * @param {'sine' | 'square' | 'sawtooth'} type - The oscillator type.
+ * @returns {() => void} A function that, when called, plays the synthetic sound.
+ * @private
+ */
 const createSyntheticSound = (
     frequency: number,
     duration: number,
@@ -88,7 +122,11 @@ const createSyntheticSound = (
     };
 };
 
-// Synthetic sound generators
+/**
+ * A record of functions that generate synthetic sounds for each game event.
+ * Used as a fallback when the primary sound assets are unavailable.
+ * @private
+ */
 const SYNTHETIC_SOUNDS = {
     click: createSyntheticSound(800, 0.1, 'square'),
     hover: createSyntheticSound(600, 0.05, 'sine'),
@@ -111,6 +149,16 @@ const SYNTHETIC_SOUNDS = {
     reset: createSyntheticSound(500, 0.15, 'square'),
 };
 
+/**
+ * A comprehensive sound system hook for React.
+ *
+ * This hook initializes and manages all audio for the application.
+ * It handles loading audio sprites, playing sounds for specific game events,
+ * and manages global volume and mute states. It includes a robust
+ * fallback to synthetic sounds if audio files cannot be loaded.
+ *
+ * @returns {SoundSystem} The public interface for controlling the sound system.
+ */
 export function useSoundSystem(): SoundSystem {
     const [isMuted, setIsMuted] = useState(() => {
         // Check localStorage for mute preference
@@ -128,7 +176,9 @@ export function useSoundSystem(): SoundSystem {
     const aiThinkingRef = useRef<number | null>(null);
     const [useSynthetic, setUseSynthetic] = useState(false);
 
-    // Initialize sound objects
+    // Initialize sound objects. This effect runs once on component mount.
+    // It attempts to load the primary audio assets and sets up the fallback
+    // system if loading fails.
     useEffect(() => {
         const loadSounds = async () => {
             try {
@@ -153,15 +203,16 @@ export function useSoundSystem(): SoundSystem {
 
         loadSounds();
 
+        const soundRefs = Object.values(soundsRef.current);
         return () => {
             // Cleanup
-            Object.values(soundsRef.current).forEach(sound => {
+            soundRefs.forEach(sound => {
                 if (sound) sound.unload();
             });
         };
-    }, []);
+    }, [volume]);
 
-    // Update volume when changed
+    // Update volume when changed.
     useEffect(() => {
         Object.values(soundsRef.current).forEach(sound => {
             if (sound) sound.volume(volume);
@@ -169,7 +220,7 @@ export function useSoundSystem(): SoundSystem {
         localStorage.setItem('infinitoe-volume', volume.toString());
     }, [volume]);
 
-    // Update mute preference
+    // Update mute preference in localStorage whenever it changes.
     useEffect(() => {
         localStorage.setItem('infinitoe-muted', JSON.stringify(isMuted));
     }, [isMuted]);

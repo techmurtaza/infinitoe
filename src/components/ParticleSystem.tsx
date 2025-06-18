@@ -1,10 +1,10 @@
 /**
- * @fileoverview Particle system for creating epic celebration effects.
- * This component creates particles that explode outward from a central point,
- * perfect for winner/loser celebrations and other dramatic moments.
+ * @fileoverview A high-performance, canvas-based particle system for creating
+ * epic celebration effects. This component renders particles that explode
+ * outward from a central point and can also create smaller, targeted bursts.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Particle {
@@ -21,14 +21,28 @@ interface Particle {
     rotationSpeed: number;
 }
 
+/** Props for the main ParticleSystem component. */
 interface ParticleSystemProps {
+    /** Whether the particle animation is currently active. */
     isActive: boolean;
+    /** The type of particle effect to display. */
     type: 'win' | 'lose' | 'celebration';
+    /** A multiplier for the number and speed of particles.
+     * @default 1
+     */
     intensity?: number;
+    /** The duration of the particle effect in milliseconds.
+     * @default 3000
+     */
     duration?: number;
+    /** An optional array of hex color strings to override the default colors. */
     colors?: string[];
 }
 
+/**
+ * Pre-defined configurations for different particle effect types.
+ * @private
+ */
 const PARTICLE_CONFIGS = {
     win: {
         colors: ['#00ff41', '#00f5ff', '#ffff00', '#ff4500'],
@@ -53,6 +67,14 @@ const PARTICLE_CONFIGS = {
     },
 };
 
+/**
+ * A canvas-based particle system that creates an explosion effect from the
+ * center of the screen. It's highly performant as it doesn't manipulate
+ * the DOM for each particle.
+ *
+ * @param {ParticleSystemProps} props The component props.
+ * @returns {JSX.Element | null} The rendered canvas element or null.
+ */
 export default function ParticleSystem({
     isActive,
     type,
@@ -68,82 +90,91 @@ export default function ParticleSystem({
     const config = PARTICLE_CONFIGS[type];
     const particleColors = colors || config.colors;
 
-    const createParticle = (centerX: number, centerY: number): Particle => {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = (Math.random() * config.speed + 2) * intensity;
-        const life = config.life * intensity;
+    const createParticle = useCallback(
+        (centerX: number, centerY: number): Particle => {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = (Math.random() * config.speed + 2) * intensity;
+            const life = config.life * intensity;
 
-        return {
-            id: Math.random(),
-            x: centerX,
-            y: centerY,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            life: life,
-            maxLife: life,
-            color: particleColors[Math.floor(Math.random() * particleColors.length)],
-            size: Math.random() * 6 + 2,
-            rotation: 0,
-            rotationSpeed: (Math.random() - 0.5) * 0.3,
-        };
-    };
+            return {
+                id: Math.random(),
+                x: centerX,
+                y: centerY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: life,
+                maxLife: life,
+                color: particleColors[Math.floor(Math.random() * particleColors.length)],
+                size: Math.random() * 6 + 2,
+                rotation: 0,
+                rotationSpeed: (Math.random() - 0.5) * 0.3,
+            };
+        },
+        [config.life, config.speed, intensity, particleColors]
+    );
 
-    const updateParticles = (particleList: Particle[]): Particle[] => {
-        return particleList
-            .map(particle => ({
-                ...particle,
-                x: particle.x + particle.vx,
-                y: particle.y + particle.vy,
-                vy: particle.vy + config.gravity,
-                vx: particle.vx * 0.99, // Air resistance
-                life: particle.life - 1,
-                rotation: particle.rotation + particle.rotationSpeed,
-            }))
-            .filter(particle => particle.life > 0);
-    };
+    const updateParticles = useCallback(
+        (particleList: Particle[]): Particle[] => {
+            return particleList
+                .map(particle => ({
+                    ...particle,
+                    x: particle.x + particle.vx,
+                    y: particle.y + particle.vy,
+                    vy: particle.vy + config.gravity,
+                    vx: particle.vx * 0.99, // Air resistance
+                    life: particle.life - 1,
+                    rotation: particle.rotation + particle.rotationSpeed,
+                }))
+                .filter(particle => particle.life > 0);
+        },
+        [config.gravity]
+    );
 
-    const drawParticles = (canvas: HTMLCanvasElement, particleList: Particle[]) => {
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+    const drawParticles = useCallback(
+        (canvas: HTMLCanvasElement, particleList: Particle[]) => {
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        particleList.forEach(particle => {
-            const alpha = particle.life / particle.maxLife;
+            particleList.forEach(particle => {
+                const alpha = particle.life / particle.maxLife;
 
-            ctx.save();
-            ctx.globalAlpha = alpha;
-            ctx.translate(particle.x, particle.y);
-            ctx.rotate(particle.rotation);
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.translate(particle.x, particle.y);
+                ctx.rotate(particle.rotation);
 
-            // Create gradient for each particle
-            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size);
-            gradient.addColorStop(0, particle.color);
-            gradient.addColorStop(1, particle.color + '00');
+                // Create gradient for each particle
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size);
+                gradient.addColorStop(0, particle.color);
+                gradient.addColorStop(1, particle.color + '00');
 
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Add sparkle effect for celebration
-            if (type === 'celebration' && Math.random() < 0.3) {
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 1;
-                ctx.globalAlpha = alpha * 0.8;
+                ctx.fillStyle = gradient;
                 ctx.beginPath();
-                ctx.moveTo(-particle.size * 0.8, 0);
-                ctx.lineTo(particle.size * 0.8, 0);
-                ctx.moveTo(0, -particle.size * 0.8);
-                ctx.lineTo(0, particle.size * 0.8);
-                ctx.stroke();
-            }
+                ctx.arc(0, 0, particle.size, 0, Math.PI * 2);
+                ctx.fill();
 
-            ctx.restore();
-        });
-    };
+                // Add sparkle effect for celebration
+                if (type === 'celebration' && Math.random() < 0.3) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+                    ctx.globalAlpha = alpha * 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(-particle.size * 0.8, 0);
+                    ctx.lineTo(particle.size * 0.8, 0);
+                    ctx.moveTo(0, -particle.size * 0.8);
+                    ctx.lineTo(0, particle.size * 0.8);
+                    ctx.stroke();
+                }
 
-    const animate = () => {
+                ctx.restore();
+            });
+        },
+        [type]
+    );
+
+    const animate = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -154,7 +185,7 @@ export default function ParticleSystem({
         });
 
         animationRef.current = requestAnimationFrame(animate);
-    };
+    }, [drawParticles, updateParticles]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -209,7 +240,7 @@ export default function ParticleSystem({
                 }
             };
         }
-    }, [isActive, type, intensity, duration]);
+    }, [isActive, type, intensity, duration, config, createParticle, animate]);
 
     if (!isActive) return null;
 
@@ -232,7 +263,8 @@ export default function ParticleSystem({
     );
 }
 
-// Utility component for creating particle bursts at specific positions
+// Utility component for creating smaller, targeted particle bursts using
+// Framer Motion. Ideal for effects tied to specific element positions.
 export function ParticleBurst({
     x,
     y,
