@@ -1,49 +1,327 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: dark light;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+    /* Cinematic Color Palette */
+    --neon-cyan: #00f5ff;
+    --neon-pink: #ff0080;
+    --neon-purple: #8000ff;
+    --neon-green: #00ff41;
+    --neon-orange: #ff4500;
+    --neon-yellow: #ffff00;
+
+    /* Dark Theme Foundation */
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #1a1a2e;
+    --bg-tertiary: #16213e;
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-hover: rgba(255, 255, 255, 0.1);
+
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #b8bcc8;
+    --text-muted: #6b7280;
+
+    /* Shadows & Glows */
+    --shadow-neon: 0 0 20px var(--neon-cyan);
+    --shadow-pink: 0 0 20px var(--neon-pink);
+    --shadow-purple: 0 0 20px var(--neon-purple);
+
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  overflow-x: hidden;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 /* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+    background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink));
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+    background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
 }
 
-/* Custom animations and unused classes removed for clarity. */ 
+/* Cinematic Utilities */
+@layer utilities {
+    .text-neon-cyan {
+        color: var(--neon-cyan);
+        text-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .text-neon-pink {
+        color: var(--neon-pink);
+        text-shadow: 0 0 10px var(--neon-pink);
+    }
+
+    .text-neon-purple {
+        color: var(--neon-purple);
+        text-shadow: 0 0 10px var(--neon-purple);
+    }
+
+    .text-neon-green {
+        color: var(--neon-green);
+        text-shadow: 0 0 10px var(--neon-green);
+    }
+
+    .bg-glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .bg-glass-hover {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .neon-border-cyan {
+        border: 2px solid var(--neon-cyan);
+        box-shadow:
+            0 0 10px var(--neon-cyan),
+            inset 0 0 10px rgba(0, 245, 255, 0.1);
+    }
+
+    .neon-border-pink {
+        border: 2px solid var(--neon-pink);
+        box-shadow:
+            0 0 10px var(--neon-pink),
+            inset 0 0 10px rgba(255, 0, 128, 0.1);
+    }
+
+    .neon-glow-cyan {
+        box-shadow:
+            0 0 20px var(--neon-cyan),
+            0 0 40px var(--neon-cyan),
+            0 0 60px var(--neon-cyan);
+    }
+
+    .neon-glow-pink {
+        box-shadow:
+            0 0 20px var(--neon-pink),
+            0 0 40px var(--neon-pink),
+            0 0 60px var(--neon-pink);
+    }
+
+    .cyberpunk-grid {
+        background-image:
+            linear-gradient(rgba(0, 245, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 245, 255, 0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+
+    .particle-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .game-title {
+        font-family: 'Orbitron', monospace;
+        font-weight: 900;
+        background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: neon-pulse 2s ease-in-out infinite alternate;
+    }
+
+    .cell-neon {
+        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cell-neon:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--neon-cyan);
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .cell-neon.active {
+        border: 2px solid var(--neon-cyan);
+        box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+    }
+
+    .cell-neon.winner {
+        border: 2px solid var(--neon-green);
+        box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+        animation: winner-pulse 1s ease-in-out infinite alternate;
+    }
+
+    .cell-neon.removed {
+        border: 2px solid var(--neon-pink);
+        box-shadow: 0 0 30px rgba(255, 0, 128, 0.5);
+        animation: removed-pulse 0.5s ease-in-out;
+    }
+}
+
+/* Keyframe Animations */
+@keyframes neon-pulse {
+    0% {
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
+    100% {
+        background-position: 100% 50%;
+        filter: hue-rotate(60deg);
+    }
+}
+
+@keyframes winner-pulse {
+    0% {
+        box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+        transform: scale(1);
+    }
+    100% {
+        box-shadow: 0 0 50px rgba(0, 255, 65, 0.8);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes removed-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 30px rgba(255, 0, 128, 0.5);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 50px rgba(255, 0, 128, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 30px rgba(255, 0, 128, 0.5);
+    }
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes particle-float {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--random-x, 100px), var(--random-y, -100px)) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+@keyframes screen-shake {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-2px);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(2px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+    .game-title {
+        font-size: 3rem;
+    }
+
+    .cell-neon {
+        min-height: 4rem;
+        min-width: 4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 2.5rem;
+    }
+
+    .cell-neon {
+        min-height: 3.5rem;
+        min-width: 3.5rem;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --neon-cyan: #00ffff;
+        --neon-pink: #ff00ff;
+        --neon-purple: #8000ff;
+        --neon-green: #00ff00;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

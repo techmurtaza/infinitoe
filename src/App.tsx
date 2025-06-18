@@ -4,7 +4,7 @@
  * whole thing together.
  */
 
-import Infinitoe from './components/Infinitoe'
+import Infinitoe from './components/Infinitoe';
 
 /**
  * The main App component. It's a simple functional component that renders the Infinitoe component.
@@ -12,7 +12,7 @@ import Infinitoe from './components/Infinitoe'
  * @returns {JSX.Element} The rendered component.
  */
 function App() {
-  return <Infinitoe />
+    return <Infinitoe />;
 }
 
-export default App 
+export default App;

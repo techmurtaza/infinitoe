@@ -6,4 +6,4 @@
 
 export { Board, type Player } from './Board';
 export { InfinitoeGame, type GameStatus } from './Game';
-export { type AI, EasyAI, MediumAI, HardAI } from './AI'; 
+export { type AI, EasyAI, MediumAI, HardAI } from './AI';
